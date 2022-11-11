@@ -36,7 +36,7 @@ const App = () => {
   let starting = false;
   const [gameOver, setGameOver] = useState(false);
   const [start, setStart] = useState(false);
-  
+  const [restart , setRestart] = useState(false);
   // const [move, setMove] = useState(true);
   useEffect(() => {
     // 初始化
@@ -91,6 +91,10 @@ const App = () => {
                 setGameOver(true);
                 setTimeout(() => {
                   setGameOver(false);
+                  setTimeout(() => {
+                    setRestart(true);
+                    console.log(restart);
+                  }, 100)
                 }, 1000);
                 starting = false;
                 console.log('game over');
@@ -106,6 +110,9 @@ const App = () => {
                 setGameOver(true);
                 setTimeout(() => {
                   setGameOver(false);
+                  setTimeout(() => {
+                    setRestart(true);
+                  }, 100)
                 }, 1000);
                 starting = false;
                 console.log('game over');
@@ -415,12 +422,25 @@ const App = () => {
     }
   }
 
+  const RestartFun = () => {
+    setRestart(false);
+    setStart(true);
+    // camera.position.set(0, 5, 100);
+    // camera.lookAt((0, 10, 0)) // 相機焦點
+    setTimeout(() => {
+      setStart(false);
+      startCircle();
+      starting = true;
+    }, 500)
+  }
+
   return (
     <>
       <canvas ref={canvasRef} />
       <button onClick={rotate.bind(this)}>12213</button>
       {gameOver && <div style={{position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', color: '#ffffff', fontSize: '40px'}}>Game Over</div>}
-      {start && <div style={{position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', color: '#ffffff', fontSize: '40px'}}>Start</div>}
+      {start && <div style={{position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', color: '#ffffff', fontSize: '40px'}}>開始</div>}
+      {restart && <div onClick={RestartFun.bind(this)} className='restart-div'>重新開始</div>}
     </>
   )
 }
