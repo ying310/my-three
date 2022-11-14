@@ -234,7 +234,7 @@ const Game = () => {
   }
 
   const loadMesh = () => {
-    const geometry = new THREE.BoxGeometry(300, 0, 1) // 幾何體
+    const geometry = new THREE.BoxGeometry(300, 1, 1) // 幾何體
     const material = new THREE.MeshPhongMaterial({ 
         color: 0xffffff 
     }) // 材質

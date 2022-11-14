@@ -3,8 +3,10 @@ import * as THREE from 'three';
 import { useRef, useEffect, useState } from 'react';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
 import { FBXLoader } from 'three/examples/jsm/loaders/FBXLoader';
+import claire from './models/claire.fbx';
+import ty from './models/amy.fbx';
 import shake from './animation/shake.fbx';
-import Ty from './models/Ty.fbx';
+import Jogging from './animation/Jogging.fbx';
 
 import rt from './assets/skybox/rt.png';
 import bk from './assets/skybox/bk.png';
@@ -19,9 +21,11 @@ const Char = () => {
   let renderer = useRef();
   let scene = useRef();
   let camera = useRef();
+  let npc = useRef();
   let model = useRef();
   let controls = useRef();
   let upDown = useRef('down');
+  let npcMixer = useRef();
   let mixer = useRef();
   let move = useRef(false);
   let starting = useRef(false);
@@ -45,35 +49,13 @@ const Char = () => {
     // pointLight.position.set(0, 15, 10)
     // scene.current.add(pointLight)
 
-    // const ambientLight = new THREE.AmbientLight(0xffffff)
-    // scene.current.add(ambientLight)
+    const ambientLight = new THREE.AmbientLight(0xffffff)
+    scene.current.add(ambientLight)
 
-    // 顏色，強度，距離，角度和指數
-    // 角度是錐形將採取的角度。
-    // 指數是指光從目標方向落到0的速度。數字越高，光線越暗。
-    const spotLight = new THREE.SpotLight(0xffffff, 2, 100, 15, 0);
-    spotLight.position.set(0, 10, 3);
-    scene.current.add(spotLight);
+    
 
-    spotLight.shadow.mapSize.width = 512; // default
-    spotLight.shadow.mapSize.height = 512; // default
-    spotLight.shadow.camera.near = 0.5; // default
-    spotLight.shadow.camera.far = 500; // default
-
-    var helper = new THREE.CameraHelper(spotLight.shadow.camera );
-    scene.current.add(helper);
-
-    const sphereGeometry = new THREE.SphereGeometry( 5, 32, 32 );
-    const sphereMaterial = new THREE.MeshStandardMaterial( { color: 0xff0000 } );
-    const sphere = new THREE.Mesh( sphereGeometry, sphereMaterial );
-    sphere.position.set(0, 5 , 0);
-    sphere.castShadow = true; //default is false
-    sphere.receiveShadow = false; //default
-    scene.current.add( sphere );
-
-    // loadModel();
-    // environment();
-    plane()
+    loadModel();
+    environment();
     loadMesh();
     
     setTimeout(() => {
@@ -174,12 +156,12 @@ const Char = () => {
       }
       if(upDown.current === 'up') {
         move.current = true;
-        model.current.rotation.y += 0.07;
+        npc.current.rotation.y += 0.07;
       } else {
         move.current = true;
-        model.current.rotation.y -= 0.07;
+        npc.current.rotation.y -= 0.07;
       }
-      if(model.current.rotation.y >= Math.PI && upDown.current === 'up') {
+      if(npc.current.rotation.y >= Math.PI && upDown.current === 'up') {
         upDown.current = 'down';
         move.current = true;
         clearInterval(c);
@@ -188,7 +170,7 @@ const Char = () => {
           startCircle();
         }, random);
       }
-      if(model.current.rotation.y <= 0 && upDown.current === 'down') {
+      if(npc.current.rotation.y <= 0 && upDown.current === 'down') {
         upDown.current = 'up';
         move.current = false;
         clearInterval(c);
@@ -203,9 +185,9 @@ const Char = () => {
   const loadModel = () => {
     const fbxLoader = new FBXLoader();
     fbxLoader.load(
-        Ty,
+        claire,
         (fbx) => {
-            model.current = fbx;
+            npc.current = fbx;
             fbx.scale.set(0.05, 0.05, 0.05);
             fbx.position.set(0, 0, 0)
             fbx.castShadow = true;
@@ -215,10 +197,10 @@ const Char = () => {
               (object) => {
                   console.log('loaded stand')
                   animation.current = object;
-                  mixer.current = new THREE.AnimationMixer(fbx)
-                  const animationAction = mixer.current.clipAction(object.animations[0]);
+                  npcMixer.current = new THREE.AnimationMixer(fbx)
+                  const animationAction = npcMixer.current.clipAction(object.animations[0]);
                   animationAction.play();
-                  mixer.current.update();
+                  npcMixer.current.update();
             })
             scene.current.add(fbx)
         },
@@ -229,6 +211,32 @@ const Char = () => {
             console.log(error)
         }
     )
+    const fbxLoader2 = new FBXLoader();
+    fbxLoader2.load(
+      ty,
+      (fbx) => {
+          model.current = fbx;
+          fbx.scale.set(0.05, 0.05, 0.05);
+          fbx.position.set(0, 0, 0)
+          const anim = new FBXLoader();
+          anim.load(
+            Jogging,
+            (object) => {
+                console.log('loaded stand')
+                animation.current = object;
+                mixer.current = new THREE.AnimationMixer(fbx)
+                const animationAction = mixer.current.clipAction(object.animations[0]);
+                animationAction.play();
+          })
+          scene.current.add(fbx)
+      },
+      (xhr) => {
+          console.log((xhr.loaded / xhr.total) * 100 + '% loaded')
+      },
+      (error) => {
+          console.log(error)
+      }
+  )
   }
 
   const environment = () => {
@@ -251,7 +259,7 @@ const Char = () => {
   }
 
   const loadMesh = () => {
-    const geometry = new THREE.BoxGeometry(300, 0, 1) // 幾何體
+    const geometry = new THREE.BoxGeometry(300, 1, 1) // 幾何體
     const material = new THREE.MeshPhongMaterial({ 
         color: 0xffffff 
     }) // 材質
@@ -263,9 +271,9 @@ const Char = () => {
   const render = () => {
     renderer.current.render(scene.current, camera.current)
     const delta = clock.getDelta();
-    // if ( mixer ) {
-      // mixer.current.update( delta );
-    // }
+    if ( mixer.current ) {
+      mixer.current.update( delta );
+    }
     animate()
   }
 
@@ -281,7 +289,7 @@ const Char = () => {
     camera.current.position.set(0, 5, 350);
     camera.current.lookAt((0, 10, 0)) // 相機焦點
     controls.current.update()
-    model.current.rotation.y = Math.PI;
+    npc.current.rotation.y = Math.PI;
     setTimeout(() => {
       startCircle();
       starting.current = true;
