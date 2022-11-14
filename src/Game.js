@@ -4,7 +4,11 @@ import { useRef, useEffect, useState } from 'react';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
 import { FBXLoader } from 'three/examples/jsm/loaders/FBXLoader';
 import shake from './animation/shake.fbx';
-import Ty from './models/Ty.fbx';
+import claire from './models/claire.fbx';
+import pbr from './models/pbr.fbx';
+import Jogging from './animation/Jogging.fbx';
+import music123 from './assets/music/123music.mp3';
+
 
 import rt from './assets/skybox/rt.png';
 import bk from './assets/skybox/bk.png';
@@ -21,6 +25,7 @@ const Game = () => {
   let scene = useRef();
   let camera = useRef();
   let smallCamera = useRef();
+  let npcModel = useRef();
   let model = useRef();
   let controls = useRef();
   let smallControls = useRef();
@@ -28,10 +33,16 @@ const Game = () => {
   let mixer = useRef();
   let move = useRef(false);
   let starting = useRef(false);
+  let animationAction = useRef();
+  let startAction = useRef(false);
+  const clock = new THREE.Clock();
+  const listener = new THREE.AudioListener();
+  const sound = new THREE.Audio( listener );
+  const audioLoader = new THREE.AudioLoader();
   const [smallCanvasShow, setSmallCanvasShow] = useState(true);
   const [gameOverHTML, setGameOverHTML] = useState(false);
   const [victoryHTML, setVictoryHTML] = useState(false);
-  const [restartHTML , setRestartHTML] = useState(true);
+  const [restartHTML , setRestartHTML] = useState(false);
   useEffect(() => {
     // 初始化
     init();
@@ -43,72 +54,67 @@ const Game = () => {
     controls.current.enabled = false;
     smallControls.current.enabled = false;
 
-    // 建立光源
-    const pointLight = new THREE.PointLight(0xffffff)
-    pointLight.position.set(0, 15, 10)
-    scene.current.add(pointLight)
-
     const ambientLight = new THREE.AmbientLight(0xffffff)
+    scene.current.add(ambientLight);
+    
+    
 
-    scene.current.add(ambientLight)
 
+    loadNpcModel();
     loadModel();
     environment();
     loadMesh();
     
     render();
     setTimeout(() => {
-      setTimeout(() => {
-        // starting.current = true;
-        // startCircle();
-        window.addEventListener('keydown', (event) => {
-          if(event.keyCode === 87 && starting.current) {
-            if(camera.current.position.z > -7) {
-              if(move.current) {
-                camera.current.position.z -= 0.5;
-                if(camera.current.position.z < 1) {
-                    setVictoryHTML(true);
-                    setTimeout(() => {
-                        setVictoryHTML(false);
-                        setTimeout(() => {
-                          setRestartHTML(true);
-                        }, 100)
-                    }, 1000);
-                    starting.current = false;
-                }
-              } else {
-                setGameOverHTML(true);
-                setTimeout(() => {
-                  setGameOverHTML(false);
+      setRestartHTML(true);
+      window.addEventListener('keydown', (event) => {
+        if(event.keyCode === 87 && starting.current) {
+          if(camera.current.position.z > -7) {
+            if(move.current) {
+              camera.current.position.z -= 0.7;
+              if(camera.current.position.z < 1) {
+                  setVictoryHTML(true);
                   setTimeout(() => {
-                    setRestartHTML(true);
-                  }, 100)
-                }, 1000);
-                starting.current = false;
-                console.log('game over');
+                      setVictoryHTML(false);
+                      setTimeout(() => {
+                        setRestartHTML(true);
+                      }, 100)
+                  }, 1000);
+                  starting.current = false;
               }
+            } else {
+              setGameOverHTML(true);
+              setTimeout(() => {
+                setGameOverHTML(false);
+                setTimeout(() => {
+                  setRestartHTML(true);
+                }, 100)
+              }, 1000);
+              starting.current = false;
+              console.log('game over');
             }
           }
-  
-          if(event.keyCode === 83 && starting.current) {
-            if(camera.current.position.z < 150) {
-              if(move.current) {
-                camera.current.position.z += 0.5;
-              } else {
-                setGameOverHTML(true);
+        }
+
+        if(event.keyCode === 83 && starting.current) {
+          if(camera.current.position.z < 150) {
+            if(move.current) {
+              camera.current.position.z += 0.7;
+            } else {
+              setGameOverHTML(true);
+              setTimeout(() => {
+                setGameOverHTML(false);
                 setTimeout(() => {
-                  setGameOverHTML(false);
-                  setTimeout(() => {
-                    setRestartHTML(true);
-                  }, 100)
-                }, 1000);
-                starting.current = false;
-                console.log('game over');
-              }
+                  setRestartHTML(true);
+                }, 100)
+              }, 1000);
+              starting.current = false;
+              console.log('game over');
             }
           }
-        });
-      }, 500)
+        }
+      });
     }, 2500)
   }, []);
 
@@ -137,7 +143,7 @@ const Game = () => {
       1000
     )
     // camera.position.set(0, 12, 30) // 相機位置
-    camera.current.position.set(0, 5, 350);
+    camera.current.position.set(0, 5, 300);
     camera.current.lookAt((0, 10, 0)) // 相機焦點
 
     smallCamera.current = new THREE.PerspectiveCamera(
@@ -151,6 +157,12 @@ const Game = () => {
   }
 
   const startCircle = () => {
+    let time = 10;
+    let first = false;
+    if(upDown.current === 'down') {
+      first = true;
+      time = 65;
+    }
     const c = setInterval(() => {
       if(!starting.current) {
         clearInterval(c);
@@ -158,12 +170,21 @@ const Game = () => {
       }
       if(upDown.current === 'up') {
         move.current = true;
-        model.current.rotation.y += 0.07;
+        npcModel.current.rotation.y += 0.07;
       } else {
+        if(first) {
+          audioLoader.load( music123, function( buffer ) {
+            sound.setBuffer(buffer);
+            sound.setVolume(1);
+            sound.setPlaybackRate(1.5)
+            sound.play();
+          });
+          first = false;
+        }
         move.current = true;
-        model.current.rotation.y -= 0.07;
+        npcModel.current.rotation.y -= 0.07;
       }
-      if(model.current.rotation.y >= Math.PI && upDown.current === 'up') {
+      if(npcModel.current.rotation.y >= Math.PI && upDown.current === 'up') {
         upDown.current = 'down';
         move.current = true;
         clearInterval(c);
@@ -172,7 +193,7 @@ const Game = () => {
           startCircle();
         }, random);
       }
-      if(model.current.rotation.y <= 0 && upDown.current === 'down') {
+      if(npcModel.current.rotation.y <= 0 && upDown.current === 'down') {
         upDown.current = 'up';
         move.current = false;
         clearInterval(c);
@@ -181,15 +202,43 @@ const Game = () => {
           startCircle();
         }, random);
       }
-    }, 10)
+    }, time)
   }
 
-  const loadModel = () => {
+  const startModel = () => {
+    const c = setInterval(() => {
+      if(!starting.current) {
+        startAction.current = false;
+        clearInterval(c);
+        return;
+      }
+      if(move.current) {
+        startAction.current = true;
+        model.current.position.z -= 0.5;
+        if(model.current.position.z < -1) {
+          clearInterval(c);
+          startAction.current = false;
+          setGameOverHTML(true);
+          setTimeout(() => {
+            setGameOverHTML(false);
+              setTimeout(() => {
+                setRestartHTML(true);
+              }, 100)
+          }, 1000);
+          starting.current = false;
+      }
+      } else {
+        startAction.current = false;
+      }
+    }, 50);
+  }
+
+  const loadNpcModel = () => {
     const fbxLoader = new FBXLoader();
     fbxLoader.load(
-        Ty,
+        claire,
         (fbx) => {
-            model.current = fbx;
+            npcModel.current = fbx;
             fbx.scale.set(0.05, 0.05, 0.05);
             fbx.position.set(0, 0, 0)
             fbx.rotation.y = Math.PI;
@@ -198,11 +247,10 @@ const Game = () => {
               shake,
               (object) => {
                   console.log('loaded stand')
-                  mixer.current = new THREE.AnimationMixer(fbx)
-                  const animationAction = mixer.current.clipAction(object.animations[0]);
-                  const clock = new THREE.Clock()
+                  const mixer = new THREE.AnimationMixer(fbx)
+                  const animationAction = mixer.clipAction(object.animations[0]);
                   animationAction.play();
-                  mixer.current.update(clock);
+                  mixer.update();
             })
             scene.current.add(fbx)
         },
@@ -212,6 +260,36 @@ const Game = () => {
         (error) => {
             console.log(error)
         }
+    )
+  }
+
+  const loadModel = () => {
+    const fbxLoader = new FBXLoader();
+    fbxLoader.load(
+      pbr,
+      (fbx) => {
+          model.current = fbx;
+          fbx.scale.set(0.05, 0.05, 0.05);
+          fbx.position.set(30, 0, 270);
+          fbx.rotation.y = Math.PI;
+          const anim = new FBXLoader();
+          anim.load(
+            Jogging,
+            (object) => {
+                console.log('loaded stand')
+                mixer.current = new THREE.AnimationMixer(fbx)
+                animationAction.current = mixer.current.clipAction(object.animations[0]);
+                animationAction.current.play();
+                // mixer.current.update();
+          })
+          scene.current.add(fbx)
+      },
+      (xhr) => {
+          console.log((xhr.loaded / xhr.total) * 100 + '% loaded')
+      },
+      (error) => {
+          console.log(error)
+      }
     )
   }
 
@@ -250,21 +328,30 @@ const Game = () => {
   }
 
   const animate = () => {
-    // cube.position.x -= 0.01;
-    // cube.rotation.y += 0.1;
-    // model.rotateY(Math.PI);
+    if ( mixer.current) {
+      const delta = clock.getDelta();
+      if(startAction.current) {
+        mixer.current.update( delta );
+      } else {
+        mixer.current.update( delta );
+        animationAction.current.time = 0;
+      }
+    }
     requestAnimationFrame(render)
   }
 
   const RestartFun = () => {
     setRestartHTML(false);
-    camera.current.position.set(0, 5, 350);
+    startAction.current = false;
+    camera.current.position.set(0, 5, 300);
     camera.current.lookAt((0, 10, 0)) // 相機焦點
     controls.current.update()
     smallControls.current.update()
-    model.current.rotation.y = Math.PI;
+    npcModel.current.rotation.y = Math.PI;
+    model.current.position.z = 270;
     setTimeout(() => {
       startCircle();
+      startModel();
       starting.current = true;
     }, 500)
   }

@@ -4,9 +4,10 @@ import { useRef, useEffect, useState } from 'react';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
 import { FBXLoader } from 'three/examples/jsm/loaders/FBXLoader';
 import claire from './models/claire.fbx';
-import ty from './models/amy.fbx';
-import shake from './animation/shake.fbx';
+import pbr from './models/pbr.fbx';
 import Jogging from './animation/Jogging.fbx';
+import shake from './animation/shake.fbx';
+import music from './assets/music/123music.mp3';
 
 import rt from './assets/skybox/rt.png';
 import bk from './assets/skybox/bk.png';
@@ -30,7 +31,7 @@ const Char = () => {
   let move = useRef(false);
   let starting = useRef(false);
   let animation = useRef();
-  const clock = new THREE.Clock()
+  const clock = new THREE.Clock();
   const [smallCanvasShow, setSmallCanvasShow] = useState(true);
   const [gameOverHTML, setGameOverHTML] = useState(false);
   const [victoryHTML, setVictoryHTML] = useState(false);
@@ -53,13 +54,13 @@ const Char = () => {
     scene.current.add(ambientLight)
 
     
-
     loadModel();
     environment();
     loadMesh();
     
     setTimeout(() => {
       render();
+      loadMusic();
       setTimeout(() => {
         // starting.current = true;
         // startCircle();
@@ -211,9 +212,8 @@ const Char = () => {
             console.log(error)
         }
     )
-    const fbxLoader2 = new FBXLoader();
-    fbxLoader2.load(
-      ty,
+    fbxLoader.load(
+      pbr,
       (fbx) => {
           model.current = fbx;
           fbx.scale.set(0.05, 0.05, 0.05);
@@ -236,7 +236,20 @@ const Char = () => {
       (error) => {
           console.log(error)
       }
-  )
+    )
+  }
+
+  const loadMusic = () => {
+    // const listener = new THREE.AudioListener();
+    // const sound = new THREE.Audio( listener );
+    // const audioLoader = new THREE.AudioLoader();
+    // audioLoader.load( music, function( buffer ) {
+    //   console.log(123123123);
+    //   sound.setBuffer( buffer );
+    //   sound.setLoop( true );
+    //   sound.setVolume( 0.5 );
+    //   sound.play();
+    // });
   }
 
   const environment = () => {
