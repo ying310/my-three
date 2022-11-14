@@ -46,10 +46,11 @@ const App = () => {
     controls.dampingFactor = 0.25
     controls.enableZoom = false
 
-    // 建立光源
-    const pointLight = new THREE.PointLight(0xffffff)
-    pointLight.position.set(0, 15, 10)
-    scene.add(pointLight)
+    // 需要3個屬性：光的顏色、強度、和強度下降到0的距離。如果設置距離為0，那麼距離是無限的。
+    const pointLight = new THREE.PointLight(0xffffff, 3, 150)
+    pointLight.position.set(0, 15, 10);
+    scene.add(pointLight);
+
 
     // const pointLight2 = new THREE.PointLight(0xffffff)
     // pointLight2.position.set(3, 0, 3)
@@ -130,9 +131,11 @@ const App = () => {
     // 建立場景
     scene = new THREE.Scene();
     // 建立渲染器
-    renderer = new THREE.WebGLRenderer({ canvas: canvasRef.current})
-    renderer.setSize(window.innerWidth, window.innerHeight) // 場景大小
-    renderer.setClearColor(0x000000, 1.0) // 預設背景顏色
+
+    renderer = new THREE.WebGLRenderer({ canvas: canvasRef.current});
+    renderer.setSize(window.innerWidth, window.innerHeight); // 場景大小
+    renderer.setClearColor(0x000000, 1.0); // 預設背景顏色
+
     renderer.shadowMap.enable = true // 陰影效果
     renderer.shadowMap.enabled = true // 設定需渲染陰影效果
     renderer.shadowMap.type = 2 // THREE.PCFSoftShadowMap
@@ -143,9 +146,9 @@ const App = () => {
       window.innerWidth / window.innerHeight,
       0.1,
       1000
-    )
-    // camera.position.set(0, 12, 30) // 相機位置
+    );
     camera.position.set(0, 5, 100);
+    camera.lookAt(scene.current.position);
     camera.lookAt((0, 10, 0)) // 相機焦點
   }
 
@@ -228,12 +231,13 @@ const App = () => {
   const createObject = () => {
     const geometry = new THREE.BoxGeometry(1, 1, 1) // 幾何體
     const material = new THREE.MeshPhongMaterial({ 
-        color: 0x0000ff 
+        color: 0xffffff 
     }) // 材質
-    cube = new THREE.Mesh(geometry, material) // 建立網格物件
+    cube = new THREE.Mesh(geometry, material) // 建立網格模型
     cube.position.set(0, 0, 0)
     scene.add(cube)
   }
+
 
   const loadModel = () => {
     const fbxLoader = new FBXLoader();

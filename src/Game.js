@@ -13,20 +13,21 @@ import ft from './assets/skybox/ft.png';
 import up from './assets/skybox/up.png';
 import lf from './assets/skybox/lf.png';
 
-const Char = () => {
+const Game = () => {
   const canvasRef = useRef();
   const smallCanvasRef = useRef();
   let renderer = useRef();
+  let smallRenderer = useRef();
   let scene = useRef();
   let camera = useRef();
+  let smallCamera = useRef();
   let model = useRef();
   let controls = useRef();
+  let smallControls = useRef();
   let upDown = useRef('down');
   let mixer = useRef();
   let move = useRef(false);
   let starting = useRef(false);
-  let animation = useRef();
-  const clock = new THREE.Clock()
   const [smallCanvasShow, setSmallCanvasShow] = useState(true);
   const [gameOverHTML, setGameOverHTML] = useState(false);
   const [victoryHTML, setVictoryHTML] = useState(false);
@@ -35,49 +36,28 @@ const Char = () => {
     // 初始化
     init();
     controls.current = new OrbitControls(camera.current, renderer.current.domElement)
+    smallControls.current = new OrbitControls(smallCamera.current, smallRenderer.current.domElement);
     // controls.current.enableDamping = true
     // controls.current.dampingFactor = 0.25
     // controls.current.enableZoom = false
-    controls.current.enabled = true;
+    controls.current.enabled = false;
+    smallControls.current.enabled = false;
 
     // 建立光源
-    // const pointLight = new THREE.PointLight(0xffffff)
-    // pointLight.position.set(0, 15, 10)
-    // scene.current.add(pointLight)
+    const pointLight = new THREE.PointLight(0xffffff)
+    pointLight.position.set(0, 15, 10)
+    scene.current.add(pointLight)
 
-    // const ambientLight = new THREE.AmbientLight(0xffffff)
-    // scene.current.add(ambientLight)
+    const ambientLight = new THREE.AmbientLight(0xffffff)
 
-    // 顏色，強度，距離，角度和指數
-    // 角度是錐形將採取的角度。
-    // 指數是指光從目標方向落到0的速度。數字越高，光線越暗。
-    const spotLight = new THREE.SpotLight(0xffffff, 2, 100, 15, 0);
-    spotLight.position.set(0, 10, 3);
-    scene.current.add(spotLight);
+    scene.current.add(ambientLight)
 
-    spotLight.shadow.mapSize.width = 512; // default
-    spotLight.shadow.mapSize.height = 512; // default
-    spotLight.shadow.camera.near = 0.5; // default
-    spotLight.shadow.camera.far = 500; // default
-
-    var helper = new THREE.CameraHelper(spotLight.shadow.camera );
-    scene.current.add(helper);
-
-    const sphereGeometry = new THREE.SphereGeometry( 5, 32, 32 );
-    const sphereMaterial = new THREE.MeshStandardMaterial( { color: 0xff0000 } );
-    const sphere = new THREE.Mesh( sphereGeometry, sphereMaterial );
-    sphere.position.set(0, 5 , 0);
-    sphere.castShadow = true; //default is false
-    sphere.receiveShadow = false; //default
-    scene.current.add( sphere );
-
-    // loadModel();
-    // environment();
-    plane()
+    loadModel();
+    environment();
     loadMesh();
     
+    render();
     setTimeout(() => {
-      render();
       setTimeout(() => {
         // starting.current = true;
         // startCircle();
@@ -132,16 +112,6 @@ const Char = () => {
     }, 2500)
   }, []);
 
-  const plane = () => {
-    const planeGeometry = new THREE.PlaneGeometry(200, 200)
-    const planeMaterial = new THREE.MeshLambertMaterial({ color: 0xffffff })
-    let plane = new THREE.Mesh(planeGeometry, planeMaterial)
-    plane.receiveShadow = true
-    plane.rotation.x = -0.5 * Math.PI // 使平面與 y 軸垂直，並讓正面朝上
-    plane.position.set(0, -0.4, 0)
-    scene.current.add(plane)
-  }
-
   const init = () => {
     // 建立場景
     scene.current = new THREE.Scene();
@@ -151,7 +121,12 @@ const Char = () => {
     renderer.current.setClearColor(0xffffff, 1.0) // 預設背景顏色
     renderer.current.shadowMap.enable = true // 陰影效果
     renderer.current.shadowMap.enabled = true // 設定需渲染陰影效果
-    renderer.current.shadowMap.type = THREE.PCFShadowMap // THREE.PCFSoftShadowMap
+    renderer.current.shadowMap.type = 2 // THREE.PCFSoftShadowMap
+
+    smallRenderer.current = new THREE.WebGLRenderer({ canvas: smallCanvasRef.current})
+    smallRenderer.current.setSize(200 , 150) // 場景大小
+    smallRenderer.current.setClearColor(0xffffff, 1.0) // 預設背景顏色
+
 
 
     // 建立相機
@@ -162,8 +137,17 @@ const Char = () => {
       1000
     )
     // camera.position.set(0, 12, 30) // 相機位置
-    camera.current.position.set(0, 5, 30);
+    camera.current.position.set(0, 5, 350);
     camera.current.lookAt((0, 10, 0)) // 相機焦點
+
+    smallCamera.current = new THREE.PerspectiveCamera(
+        75,
+        200 / 150,
+        0.1,
+        1000
+    )
+    smallCamera.current.position.set(0, 5, 20);
+    smallCamera.current.lookAt((0, 5, 0)) // 相機焦點
   }
 
   const startCircle = () => {
@@ -208,17 +192,17 @@ const Char = () => {
             model.current = fbx;
             fbx.scale.set(0.05, 0.05, 0.05);
             fbx.position.set(0, 0, 0)
-            fbx.castShadow = true;
+            fbx.rotation.y = Math.PI;
             const anim = new FBXLoader();
             anim.load(
               shake,
               (object) => {
                   console.log('loaded stand')
-                  animation.current = object;
                   mixer.current = new THREE.AnimationMixer(fbx)
                   const animationAction = mixer.current.clipAction(object.animations[0]);
+                  const clock = new THREE.Clock()
                   animationAction.play();
-                  mixer.current.update();
+                  mixer.current.update(clock);
             })
             scene.current.add(fbx)
         },
@@ -244,7 +228,6 @@ const Char = () => {
     ];
     const skyboxMesh = new THREE.Mesh(skyboxGeometry, skyboxMaterials);
     skyboxMesh.position.set(0, 100, 50)
-    skyboxMesh.receiveShadow = true;
     skyboxMesh.name = 'skyboxMesh';
 
     scene.current.add(skyboxMesh);
@@ -262,10 +245,7 @@ const Char = () => {
 
   const render = () => {
     renderer.current.render(scene.current, camera.current)
-    const delta = clock.getDelta();
-    // if ( mixer ) {
-      // mixer.current.update( delta );
-    // }
+    smallRenderer.current.render(scene.current, smallCamera.current)
     animate()
   }
 
@@ -281,6 +261,7 @@ const Char = () => {
     camera.current.position.set(0, 5, 350);
     camera.current.lookAt((0, 10, 0)) // 相機焦點
     controls.current.update()
+    smallControls.current.update()
     model.current.rotation.y = Math.PI;
     setTimeout(() => {
       startCircle();
@@ -288,14 +269,26 @@ const Char = () => {
     }, 500)
   }
 
+  const closeCanvas = () => {
+    setSmallCanvasShow(false);
+  }
+
+  const openCanvas = () => {
+    setSmallCanvasShow(true);
+  }
+
   return (
     <>
       <canvas className='canvas-outer' ref={canvasRef} />
+      <canvas className='canvas-outer' style={{display: smallCanvasShow ? 'block': 'none'}} ref={smallCanvasRef} />
+      {smallCanvasShow && <div onClick={closeCanvas} className='close-icon-outer-div'><div className='icon-div'>x</div></div>}
+      {!smallCanvasShow && <div onClick={openCanvas} className='open-icon-outer-div'><div className='icon-div'>+</div></div>}
       {gameOverHTML && <div className='hint-div'>Game Over</div>}
       {victoryHTML && <div className='hint-div'>獲勝</div>}
-      {/* {restartHTML && <div onClick={RestartFun} className='restart-div'>開始</div>} */}
+      {restartHTML && <div onClick={RestartFun} className='restart-div'>開始</div>
+      }
     </>
   )
 }
 
-export default Char;
+export default Game;
