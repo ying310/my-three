@@ -9,7 +9,6 @@ import pbr from './models/pbr.fbx';
 import Jogging from './animation/Jogging.fbx';
 import music123 from './assets/music/123music.mp3';
 
-
 import rt from './assets/skybox/rt.png';
 import bk from './assets/skybox/bk.png';
 import dn from './assets/skybox/dn.png';
@@ -48,9 +47,6 @@ const Game = () => {
     init();
     controls.current = new OrbitControls(camera.current, renderer.current.domElement)
     smallControls.current = new OrbitControls(smallCamera.current, smallRenderer.current.domElement);
-    // controls.current.enableDamping = true
-    // controls.current.dampingFactor = 0.25
-    // controls.current.enableZoom = false
     controls.current.enabled = false;
     smallControls.current.enabled = false;
 
@@ -307,7 +303,6 @@ const Game = () => {
     const skyboxMesh = new THREE.Mesh(skyboxGeometry, skyboxMaterials);
     skyboxMesh.position.set(0, 100, 50)
     skyboxMesh.name = 'skyboxMesh';
-
     scene.current.add(skyboxMesh);
   }
 
@@ -364,6 +359,12 @@ const Game = () => {
     setSmallCanvasShow(true);
   }
 
+  const changeControl = () => {
+    controls.current.enabled = !controls.current.enabled;
+    camera.current.position.set(0, 5, 300);
+    controls.current.update();
+  }
+
   return (
     <>
       <canvas className='canvas-outer' ref={canvasRef} />
@@ -372,8 +373,8 @@ const Game = () => {
       {!smallCanvasShow && <div onClick={openCanvas} className='open-icon-outer-div'><div className='icon-div'>+</div></div>}
       {gameOverHTML && <div className='hint-div'>Game Over</div>}
       {victoryHTML && <div className='hint-div'>獲勝</div>}
-      {restartHTML && <div onClick={RestartFun} className='restart-div'>開始</div>
-      }
+      {restartHTML && <div onClick={RestartFun} className='restart-div'>開始</div>}
+      <div onClick={changeControl} className='control-icon-outer-div'><div className='icon-div'>§</div></div>
     </>
   )
 }
