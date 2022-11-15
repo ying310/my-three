@@ -1,15 +1,15 @@
 {
   "files": {
-    "main.css": "/my-three/static/css/main.920a52a7.css",
-    "main.js": "/my-three/static/js/main.a2260f52.js",
+    "main.css": "/my-three/static/css/main.308a4d4f.css",
+    "main.js": "/my-three/static/js/main.94517a85.js",
     "static/js/787.e7f32708.chunk.js": "/my-three/static/js/787.e7f32708.chunk.js",
-    "static/media/mouse.fbx": "/my-three/static/media/mouse.9293aeb828f6ee9b76a8.fbx",
+    "static/media/mouse.fbx": "/my-three/static/media/mouse.4065c5e00862e914dda8.fbx",
     "static/media/pbr.fbx": "/my-three/static/media/pbr.ff0b6e9d44fd7a919431.fbx",
-    "static/media/xBot.fbx": "/my-three/static/media/xBot.d3565d8f48704b5a6e6e.fbx",
+    "static/media/xBot.fbx": "/my-three/static/media/xBot.df774f564ba8e75352b9.fbx",
     "static/media/claire.fbx": "/my-three/static/media/claire.dcd144d66c0d9be47da2.fbx",
     "static/media/Ty.fbx": "/my-three/static/media/Ty.dd8858dd54de8df23adc.fbx",
     "static/media/shake.fbx": "/my-three/static/media/shake.dd4f30faf534ef36ab09.fbx",
-    "static/media/Capoeira.fbx": "/my-three/static/media/Capoeira.6c44e7a2e0be12217710.fbx",
+    "static/media/Capoeira.fbx": "/my-three/static/media/Capoeira.7ee7ab39309f2530af94.fbx",
     "static/media/Jogging.fbx": "/my-three/static/media/Jogging.906bdd35a6d44b18c2e0.fbx",
     "static/media/dn.png": "/my-three/static/media/dn.965e7e09b5276e2a7f90.png",
     "static/media/Flair.fbx": "/my-three/static/media/Flair.32ec59b9bae3932a3ae0.fbx",
@@ -20,12 +20,12 @@
     "static/media/up.png": "/my-three/static/media/up.689e48b76f0d30c95756.png",
     "static/media/123music.mp3": "/my-three/static/media/123music.835f2bb555f53e0bd738.mp3",
     "index.html": "/my-three/index.html",
-    "main.920a52a7.css.map": "/my-three/static/css/main.920a52a7.css.map",
-    "main.a2260f52.js.map": "/my-three/static/js/main.a2260f52.js.map",
+    "main.308a4d4f.css.map": "/my-three/static/css/main.308a4d4f.css.map",
+    "main.94517a85.js.map": "/my-three/static/js/main.94517a85.js.map",
     "787.e7f32708.chunk.js.map": "/my-three/static/js/787.e7f32708.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.920a52a7.css",
-    "static/js/main.a2260f52.js"
+    "static/css/main.308a4d4f.css",
+    "static/js/main.94517a85.js"
   ]
 }
