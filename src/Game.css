@@ -120,6 +120,30 @@
     cursor: pointer;
 }
 
+.pc-outer-div {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 5;
+    color: black;
+    user-select: none;
+    padding: 10px;
+    width: 100px;
+    height: 10px;
+}
+
+.player-outer-div {
+    position: absolute;
+    top: 30px;
+    left: 0;
+    z-index: 5;
+    color: black;
+    user-select: none;
+    padding: 10px;
+    width: 100px;
+    height: 10px;
+}
+
 .canvas-outer {
     position: absolute;
     bottom: 0;

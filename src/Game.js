@@ -34,9 +34,10 @@ const Game = () => {
   let starting = useRef(false);
   let animationAction = useRef();
   let startAction = useRef(false);
+  const [loadingFinish, setLoadingFinish] = useState(false);
   const clock = new THREE.Clock();
   const listener = new THREE.AudioListener();
-  const sound = new THREE.Audio( listener );
+  const sound = useRef(new THREE.Audio( listener ));
   const audioLoader = new THREE.AudioLoader();
   const [smallCanvasShow, setSmallCanvasShow] = useState(true);
   const [gameOverHTML, setGameOverHTML] = useState(false);
@@ -53,15 +54,17 @@ const Game = () => {
     const ambientLight = new THREE.AmbientLight(0xffffff)
     scene.current.add(ambientLight);
     
-    
-
-
     loadNpcModel();
     loadModel();
     environment();
     loadMesh();
     
     render();
+    audioLoader.load( music123, function( buffer ) {
+      sound.current.setBuffer(buffer);
+      sound.current.setVolume(1);
+      sound.current.play();
+    });
     setTimeout(() => {
       setRestartHTML(true);
       window.addEventListener('keydown', (event) => {
@@ -71,6 +74,7 @@ const Game = () => {
               camera.current.position.z -= 0.7;
               if(camera.current.position.z < 1) {
                   setVictoryHTML(true);
+                  stopMusic();
                   setTimeout(() => {
                       setVictoryHTML(false);
                       setTimeout(() => {
@@ -81,6 +85,7 @@ const Game = () => {
               }
             } else {
               setGameOverHTML(true);
+              stopMusic();
               setTimeout(() => {
                 setGameOverHTML(false);
                 setTimeout(() => {
@@ -99,6 +104,7 @@ const Game = () => {
               camera.current.position.z += 0.7;
             } else {
               setGameOverHTML(true);
+              stopMusic();
               setTimeout(() => {
                 setGameOverHTML(false);
                 setTimeout(() => {
@@ -170,10 +176,10 @@ const Game = () => {
       } else {
         if(first) {
           audioLoader.load( music123, function( buffer ) {
-            sound.setBuffer(buffer);
-            sound.setVolume(1);
-            sound.setPlaybackRate(1.5)
-            sound.play();
+            sound.current.setBuffer(buffer);
+            sound.current.setVolume(1);
+            sound.current.setPlaybackRate(1.5)
+            sound.current.play();
           });
           first = false;
         }
@@ -214,6 +220,7 @@ const Game = () => {
         if(model.current.position.z < -1) {
           clearInterval(c);
           startAction.current = false;
+          stopMusic();
           setGameOverHTML(true);
           setTimeout(() => {
             setGameOverHTML(false);
@@ -276,6 +283,7 @@ const Game = () => {
                 mixer.current = new THREE.AnimationMixer(fbx)
                 animationAction.current = mixer.current.clipAction(object.animations[0]);
                 animationAction.current.play();
+                setLoadingFinish(true);
                 // mixer.current.update();
           })
           scene.current.add(fbx)
@@ -316,6 +324,11 @@ const Game = () => {
     scene.current.add(cube)
   }
 
+  const stopMusic = () => {
+    // sound.setVolume(0);
+    sound.current?.stop();
+  }
+
   const render = () => {
     renderer.current.render(scene.current, camera.current)
     smallRenderer.current.render(scene.current, smallCamera.current)
@@ -344,6 +357,7 @@ const Game = () => {
     smallControls.current.update()
     npcModel.current.rotation.y = Math.PI;
     model.current.position.z = 270;
+    sound.current.stop();
     setTimeout(() => {
       startCircle();
       startModel();
@@ -373,7 +387,7 @@ const Game = () => {
       {!smallCanvasShow && <div onClick={openCanvas} className='open-icon-outer-div'><div className='icon-div'>+</div></div>}
       {gameOverHTML && <div className='hint-div'>Game Over</div>}
       {victoryHTML && <div className='hint-div'>獲勝</div>}
-      {restartHTML && <div onClick={RestartFun} className='restart-div'>開始</div>}
+      {restartHTML && loadingFinish && <div onClick={RestartFun} className='restart-div'>開始</div>}
       <div onClick={changeControl} className='control-icon-outer-div'><div className='icon-div'>§</div></div>
     </>
   )
